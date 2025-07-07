@@ -1,3 +1,4 @@
+// lib/screens/live_bus_tracking_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -13,13 +14,14 @@ class LiveBusTrackingScreen extends StatefulWidget {
 
 class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
     with SingleTickerProviderStateMixin {
-  LatLng studentLocation = const LatLng(24.7136, 46.6753);
-  LatLng busLocation = const LatLng(24.7236, 46.6853);
+  LatLng studentLocation = const LatLng(24.7136, 46.6753); // Default fallback
+  LatLng busLocation = const LatLng(24.7236, 46.6853); // Default fallback
   String arrivalTime = '10 min';
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
-  final String studentName = 'Mohammed Ali';
+  final String studentName = 'Mohammed Ali'; // Hardcoded to match main.dart
   late AnimationController _animationController;
   late Animation<double> _animation;
+  final MapController _mapController = MapController();
 
   @override
   void initState() {
@@ -119,6 +121,26 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
     return LatLng(centerLat, centerLon);
   }
 
+  // Zoom in on the map
+  void _zoomIn() {
+    _mapController.move(_mapController.center, _mapController.zoom + 1);
+  }
+
+  // Zoom out on the map
+  void _zoomOut() {
+    _mapController.move(_mapController.center, _mapController.zoom - 1);
+  }
+
+  // Center map on student location
+  void _centerOnStudent() {
+    _mapController.move(studentLocation, _mapController.zoom);
+  }
+
+  // Center map on bus location
+  void _centerOnBus() {
+    _mapController.move(busLocation, _mapController.zoom);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,6 +148,7 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
       body: Stack(
         children: [
           FlutterMap(
+            mapController: _mapController,
             options: MapOptions(center: _calculateCenterPoint(), zoom: 14),
             children: [
               TileLayer(
@@ -195,6 +218,73 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
             left: 20,
             right: 20,
             child: _buildArrivalInfoCard(),
+          ),
+          Positioned(
+            top: 20,
+            right: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.my_location, color: Colors.blue),
+                onPressed: _centerOnStudent,
+                tooltip: 'Center on My Location',
+              ),
+            ),
+          ),
+          Positioned(
+            top: 76,
+            right: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.directions_bus, color: Colors.red),
+                onPressed: _centerOnBus,
+                tooltip: 'Center on Bus Location',
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 100,
+            right: 20,
+            child: Column(
+              children: [
+                FloatingActionButton(
+                  heroTag: 'zoomIn',
+                  mini: true,
+                  backgroundColor: Colors.white,
+                  onPressed: _zoomIn,
+                  child: const Icon(Icons.add, color: Colors.black),
+                ),
+                const SizedBox(height: 8),
+                FloatingActionButton(
+                  heroTag: 'zoomOut',
+                  mini: true,
+                  backgroundColor: Colors.white,
+                  onPressed: _zoomOut,
+                  child: const Icon(Icons.remove, color: Colors.black),
+                ),
+              ],
+            ),
           ),
         ],
       ),
