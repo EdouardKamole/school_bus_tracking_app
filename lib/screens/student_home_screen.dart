@@ -8,6 +8,7 @@ import 'package:school_bus_tracking_app/screens/support_screen.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   final String studentName;
@@ -18,6 +19,7 @@ class StudentHomeScreen extends StatefulWidget {
   @override
   State<StudentHomeScreen> createState() => _StudentHomeScreenState();
 }
+
 
 class _StudentHomeScreenState extends State<StudentHomeScreen> {
   bool isActive = false; // Track active status
@@ -137,6 +139,19 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Welcome, ${widget.studentName}'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            tooltip: 'Sign Out',
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushReplacementNamed(context, '/auth');
+            },
+          ),
+        ],
+      ),
       backgroundColor: const Color(0xFFF8FAFC),
       body: CustomScrollView(
         slivers: [

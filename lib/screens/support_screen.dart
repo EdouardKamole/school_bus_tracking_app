@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SupportScreen extends StatefulWidget {
-  const SupportScreen({Key? key}) : super(key: key);
+  const SupportScreen({super.key});
 
   @override
   State<SupportScreen> createState() => _SupportScreenState();
@@ -23,7 +23,10 @@ class _SupportScreenState extends State<SupportScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Support & Help', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Support & Help',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: Stack(
@@ -41,10 +44,15 @@ class _SupportScreenState extends State<SupportScreen> {
           Center(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 32,
+                ),
                 child: Card(
                   elevation: 10,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(22),
+                  ),
                   color: Colors.white.withOpacity(0.93),
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),
@@ -54,18 +62,29 @@ class _SupportScreenState extends State<SupportScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.support_agent_rounded, size: 36, color: Colors.deepPurple),
+                            Icon(
+                              Icons.support_agent_rounded,
+                              size: 36,
+                              color: Colors.deepPurple,
+                            ),
                             SizedBox(width: 12),
                             Text(
                               'Need Help?',
-                              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.deepPurple,
+                              ),
                             ),
                           ],
                         ),
                         SizedBox(height: 10),
                         Text(
                           'Contact our support team for any issues or questions.',
-                          style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[700],
+                          ),
                         ),
                         SizedBox(height: 30),
                         TextField(
@@ -76,19 +95,32 @@ class _SupportScreenState extends State<SupportScreen> {
                             hintText: 'Describe your issue or question...',
                             filled: true,
                             fillColor: Colors.white,
-                            prefixIcon: Icon(Icons.message_rounded, color: Colors.deepPurple),
-                            contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                            prefixIcon: Icon(
+                              Icons.message_rounded,
+                              color: Colors.deepPurple,
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 18,
+                              horizontal: 16,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(color: Colors.deepPurple.shade100),
+                              borderSide: BorderSide(
+                                color: Colors.deepPurple.shade100,
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(color: Colors.deepPurple.shade100),
+                              borderSide: BorderSide(
+                                color: Colors.deepPurple.shade100,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(color: Colors.deepPurple, width: 2),
+                              borderSide: BorderSide(
+                                color: Colors.deepPurple,
+                                width: 2,
+                              ),
                             ),
                           ),
                         ),
@@ -100,16 +132,24 @@ class _SupportScreenState extends State<SupportScreen> {
                               _sendMessage(context);
                             },
                             icon: Icon(Icons.send_rounded, color: Colors.white),
-                            label: Text('Send', style: TextStyle(color: Colors.white)),
+                            label: Text(
+                              'Send',
+                              style: TextStyle(color: Colors.white),
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.deepPurple,
                               padding: EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              textStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                              textStyle: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
                               elevation: 5,
-                              shadowColor: Colors.deepPurpleAccent.withOpacity(0.15),
+                              shadowColor: Colors.deepPurpleAccent.withOpacity(
+                                0.15,
+                              ),
                             ),
                           ),
                         ),
@@ -118,7 +158,10 @@ class _SupportScreenState extends State<SupportScreen> {
                         SizedBox(height: 10),
                         Text(
                           'Contact Information',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         SizedBox(height: 15),
                         _buildContactOption(
