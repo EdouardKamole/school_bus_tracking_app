@@ -6,7 +6,7 @@ import 'package:school_bus_tracking_app/screens/bus_details_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class LiveBusTrackingScreen extends StatefulWidget {
-  const LiveBusTrackingScreen({Key? key}) : super(key: key);
+  const LiveBusTrackingScreen({super.key});
 
   @override
   _LiveBusTrackingScreenState createState() => _LiveBusTrackingScreenState();
@@ -14,20 +14,32 @@ class LiveBusTrackingScreen extends StatefulWidget {
 
 class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
     with SingleTickerProviderStateMixin {
-  LatLng studentLocation = const LatLng(24.7136, 46.6753); // Default fallback
-  LatLng busLocation = const LatLng(24.7236, 46.6853); // Default fallback
-  String arrivalTime = '10 min';
+  List<Map<String, dynamic>> activeStudents = [];
+  List<Map<String, dynamic>> activeBuses = [];
+  bool _hasCenteredOnBus = false;
+  String arrivalTime = '--';
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
-  final String studentName = 'Mohammed Ali'; // Hardcoded to match main.dart
   late AnimationController _animationController;
   late Animation<double> _animation;
   final MapController _mapController = MapController();
 
+  LatLng? get _firstStudentLocation =>
+      activeStudents.isNotEmpty
+          ? LatLng(
+            activeStudents[0]['latitude'],
+            activeStudents[0]['longitude'],
+          )
+          : null;
+  LatLng? get _firstBusLocation =>
+      activeBuses.isNotEmpty
+          ? LatLng(activeBuses[0]['latitude'], activeBuses[0]['longitude'])
+          : null;
+
   @override
   void initState() {
     super.initState();
-    _fetchStudentLocation();
-    _fetchBusLocation();
+    _listenToActiveStudents();
+    _listenToActiveBuses();
     // Initialize animation controller for marker pulse effect
     _animationController = AnimationController(
       vsync: this,
@@ -44,81 +56,127 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
     super.dispose();
   }
 
-  // Fetch student location from Firebase Realtime Database
-  void _fetchStudentLocation() {
-    _database
-        .child('students')
-        .child(studentName)
-        .child('status')
-        .onValue
-        .listen(
-          (event) {
-            if (event.snapshot.exists) {
-              final data = event.snapshot.value as Map<dynamic, dynamic>;
-              final latitude = data['latitude'] as double?;
-              final longitude = data['longitude'] as double?;
-              if (latitude != null && longitude != null) {
-                setState(() {
-                  studentLocation = LatLng(latitude, longitude);
-                });
-              }
-            } else {
-              print('No location data found for $studentName');
-            }
-          },
-          onError: (error) {
-            print('Error fetching student location: $error');
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Failed to fetch student location from database.',
-                ),
-              ),
-            );
-          },
-        );
+  // Listen to all active students in Firebase
+  void _listenToActiveStudents() {
+    _database.child('students').onValue.listen((event) {
+      final students = event.snapshot.value as Map<dynamic, dynamic>?;
+      if (students != null) {
+        final List<Map<String, dynamic>> active = [];
+        students.forEach((name, value) {
+          final status = value['status'] as Map<dynamic, dynamic>?;
+          if (status != null &&
+              status['isActive'] == true &&
+              status['latitude'] != null &&
+              status['longitude'] != null) {
+            active.add({
+              'name': name,
+              'latitude': (status['latitude'] as num).toDouble(),
+              'longitude': (status['longitude'] as num).toDouble(),
+              'timestamp': status['timestamp'],
+            });
+          }
+        });
+        setState(() {
+          activeStudents = active;
+          arrivalTime = _calculateEta();
+        });
+      } else {
+        setState(() {
+          activeStudents = [];
+          arrivalTime = _calculateEta();
+        });
+      }
+    });
   }
 
-  // Fetch bus location from Firebase Realtime Database
-  void _fetchBusLocation() {
-    _database
-        .child('buses')
-        .child('bus1')
-        .child('location')
-        .onValue
-        .listen(
-          (event) {
-            if (event.snapshot.exists) {
-              final data = event.snapshot.value as Map<dynamic, dynamic>;
-              final latitude = data['latitude'] as double?;
-              final longitude = data['longitude'] as double?;
-              if (latitude != null && longitude != null) {
-                setState(() {
-                  busLocation = LatLng(latitude, longitude);
-                });
-              }
-            } else {
-              print('No location data found for bus1');
-            }
-          },
-          onError: (error) {
-            print('Error fetching bus location: $error');
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to fetch bus location from database.'),
-              ),
-            );
-          },
-        );
+  // Listen to all active buses in Firebase
+  void _listenToActiveBuses() {
+    _database.child('buses').onValue.listen((event) {
+      final buses = event.snapshot.value as Map<dynamic, dynamic>?;
+      if (buses != null) {
+        final List<Map<String, dynamic>> active = [];
+        buses.forEach((driver, value) {
+          final location = value['location'] as Map<dynamic, dynamic>?;
+          if (location != null &&
+              location['isActive'] == true &&
+              location['latitude'] != null &&
+              location['longitude'] != null) {
+            active.add({
+              'driver': driver,
+              'latitude': (location['latitude'] as num).toDouble(),
+              'longitude': (location['longitude'] as num).toDouble(),
+              'timestamp': location['timestamp'],
+            });
+          }
+        });
+        setState(() {
+          activeBuses = active;
+          arrivalTime = _calculateEta();
+          if (!_hasCenteredOnBus && _firstBusLocation != null) {
+            _mapController.move(_firstBusLocation!, _mapController.zoom);
+            _hasCenteredOnBus = true;
+          }
+        });
+      } else {
+        setState(() {
+          activeBuses = [];
+          arrivalTime = _calculateEta();
+        });
+      }
+    });
   }
 
-  // Calculate center point between student and bus locations
+  // Calculate ETA between bus and student
+  // You can change this value to use a different average speed for ETA calculation.
+  // For example: 30 km/h = 8.33 m/s, 50 km/h = 13.89 m/s
+  static const double _averageSpeedMetersPerSecond = 11.11;
+
+  String _calculateEta() {
+    if (_firstStudentLocation != null && _firstBusLocation != null) {
+      final Distance distance = Distance();
+      final double meters = distance(
+        _firstBusLocation!,
+        _firstStudentLocation!,
+      );
+      // Configurable average speed (default 40 km/h = 11.11 m/s)
+      double speed = _averageSpeedMetersPerSecond;
+
+      int seconds = (meters / speed).round();
+      Duration duration = Duration(seconds: seconds);
+      if (duration.inMinutes < 1) {
+        return '< 1 min';
+      } else {
+        return '${duration.inMinutes} min';
+      }
+    }
+    return '--';
+  }
+
+  // Prefer bus location for initial map centering
+  LatLng _initialMapCenter() {
+    if (_firstBusLocation != null) {
+      return _firstBusLocation!;
+    } else if (_firstStudentLocation != null) {
+      return _firstStudentLocation!;
+    } else {
+      return const LatLng(24.7136, 46.6753); // Default fallback (Riyadh)
+    }
+  }
+
+  // Calculate center point between first student and first bus locations (fallback to Riyadh if none)
   LatLng _calculateCenterPoint() {
-    final double centerLat =
-        (studentLocation.latitude + busLocation.latitude) / 2;
-    final double centerLon =
-        (studentLocation.longitude + busLocation.longitude) / 2;
-    return LatLng(centerLat, centerLon);
+    if (_firstStudentLocation != null && _firstBusLocation != null) {
+      return LatLng(
+        (_firstStudentLocation!.latitude + _firstBusLocation!.latitude) / 2,
+        (_firstStudentLocation!.longitude + _firstBusLocation!.longitude) / 2,
+      );
+    } else if (_firstStudentLocation != null) {
+      return _firstStudentLocation!;
+    } else if (_firstBusLocation != null) {
+      return _firstBusLocation!;
+    } else {
+      return const LatLng(24.7136, 46.6753); // Default fallback (Riyadh)
+    }
   }
 
   // Zoom in on the map
@@ -133,23 +191,31 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
 
   // Center map on student location
   void _centerOnStudent() {
-    _mapController.move(studentLocation, _mapController.zoom);
+    if (_firstStudentLocation != null) {
+      _mapController.move(_firstStudentLocation!, _mapController.zoom);
+    } else {
+      print("Student location is not available.");
+    }
   }
 
   // Center map on bus location
   void _centerOnBus() {
-    _mapController.move(busLocation, _mapController.zoom);
+    if (_firstBusLocation != null) {
+      _mapController.move(_firstBusLocation!, _mapController.zoom);
+    } else {
+      print("Bus location is not available.");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Live Bus Tracking')),
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           FlutterMap(
             mapController: _mapController,
-            options: MapOptions(center: _calculateCenterPoint(), zoom: 14),
+            options: MapOptions(center: _initialMapCenter(), zoom: 14),
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -157,54 +223,60 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
               ),
               MarkerLayer(
                 markers: [
-                  Marker(
-                    point: studentLocation,
-                    width: 40,
-                    height: 40,
-                    child: ScaleTransition(
-                      scale: _animation,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.person_pin_circle,
-                          color: Colors.white,
-                          size: 24,
+                  // Active student markers
+                  ...activeStudents.map(
+                    (student) => Marker(
+                      point: LatLng(student['latitude'], student['longitude']),
+                      width: 40,
+                      height: 40,
+                      child: ScaleTransition(
+                        scale: _animation,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.person_pin_circle,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  Marker(
-                    point: busLocation,
-                    width: 40,
-                    height: 40,
-                    child: ScaleTransition(
-                      scale: _animation,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.directions_bus,
-                          color: Colors.white,
-                          size: 24,
+                  // Active bus markers
+                  ...activeBuses.map(
+                    (bus) => Marker(
+                      point: LatLng(bus['latitude'], bus['longitude']),
+                      width: 40,
+                      height: 40,
+                      child: ScaleTransition(
+                        scale: _animation,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.directions_bus,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                         ),
                       ),
                     ),
@@ -212,6 +284,32 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
                 ],
               ),
             ],
+          ),
+          Positioned(
+            top: 40,
+            left: 20,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).maybePop(),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(10),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.black,
+                  size: 24,
+                ),
+              ),
+            ),
           ),
           Positioned(
             bottom: 20,
