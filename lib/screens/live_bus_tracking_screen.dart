@@ -13,11 +13,11 @@ class LiveBusTrackingScreen extends StatefulWidget {
 
 class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
     with SingleTickerProviderStateMixin {
-  LatLng studentLocation = const LatLng(24.7136, 46.6753); // Default fallback
-  LatLng busLocation = const LatLng(24.7236, 46.6853); // Default fallback
+  LatLng studentLocation = const LatLng(24.7136, 46.6753);
+  LatLng busLocation = const LatLng(24.7236, 46.6853);
   String arrivalTime = '10 min';
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
-  final String studentName = 'Mohammed Ali'; // Hardcoded to match main.dart
+  final String studentName = 'Mohammed Ali';
   late AnimationController _animationController;
   late Animation<double> _animation;
 
