@@ -39,7 +39,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   const SizedBox(height: 32),
                   _buildQuickActionsGrid(context),
                   const SizedBox(height: 32),
-
                   const SizedBox(height: 100), // Bottom padding for nav bar
                 ],
               ),
@@ -53,70 +52,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   Widget _buildSliverAppBar(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 120,
+      expandedHeight: 80, // Reduced height for minimalistic look
       floating: false,
       pinned: true,
       elevation: 0,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF764BA2),
       surfaceTintColor: Colors.transparent,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                ),
-              ),
-            ),
-            // Positioned(
-            //   right: 16,
-            //   top: 40,
-            //   child: Stack(
-            //     children: [
-            //       Container(
-            //         padding: const EdgeInsets.all(8),
-            //         decoration: BoxDecoration(
-            //           color: Colors.white.withOpacity(0.2),
-            //           borderRadius: BorderRadius.circular(12),
-            //         ),
-            //         child: const Icon(
-            //           Icons.notifications_outlined,
-            //           color: Colors.white,
-            //           size: 24,
-            //         ),
-            //       ),
-            //       Positioned(
-            //         right: 4,
-            //         top: 4,
-            //         child: Container(
-            //           padding: const EdgeInsets.all(4),
-            //           decoration: const BoxDecoration(
-            //             color: Color(0xFFFF6B6B),
-            //             shape: BoxShape.circle,
-            //           ),
-            //           constraints: const BoxConstraints(
-            //             minWidth: 16,
-            //             minHeight: 16,
-            //           ),
-            //           child: const Text(
-            //             '3',
-            //             style: TextStyle(
-            //               color: Colors.white,
-            //               fontSize: 10,
-            //               fontWeight: FontWeight.w600,
-            //             ),
-            //             textAlign: TextAlign.center,
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-          ],
-        ),
+      flexibleSpace: const FlexibleSpaceBar(
+        background: SizedBox.shrink(), // Empty content for clean look
       ),
     );
   }
@@ -179,32 +122,67 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                isActive ? 'Status: Active' : 'Status: Inactive',
-                style: TextStyle(
-                  color: isActive ? Colors.green : Colors.red,
-                  fontWeight: FontWeight.bold,
+              // Modern toggle button
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color:
+                      isActive
+                          ? const Color(0xFF10B981).withOpacity(0.15)
+                          : Colors.grey[200],
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color:
+                        isActive ? const Color(0xFF10B981) : Colors.grey[400]!,
+                    width: 1.5,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isActive
+                          ? Icons.check_circle
+                          : Icons.radio_button_unchecked,
+                      color:
+                          isActive ? const Color(0xFF10B981) : Colors.grey[500],
+                      size: 20,
+                    ),
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          isActive = !isActive;
+                        });
+                      },
+                      child: Text(
+                        isActive ? 'Active' : 'Inactive',
+                        style: TextStyle(
+                          color:
+                              isActive
+                                  ? const Color(0xFF10B981)
+                                  : Colors.grey[600],
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Switch(
+                      value: isActive,
+                      onChanged: (val) {
+                        setState(() {
+                          isActive = val;
+                        });
+                      },
+                      activeColor: const Color(0xFF10B981),
+                      inactiveThumbColor: Colors.grey[400],
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ],
                 ),
               ),
-              Switch(
-                value: isActive,
-                onChanged: (val) {
-                  setState(() {
-                    isActive = val;
-                  });
-                },
-                activeColor: Colors.green,
-                inactiveThumbColor: Colors.red,
-              ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -318,37 +296,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   ],
                 ),
               ),
-              // Container(
-              //   padding: const EdgeInsets.symmetric(
-              //     horizontal: 16,
-              //     vertical: 12,
-              //   ),
-              //   decoration: BoxDecoration(
-              //     color: Colors.white.withOpacity(0.2),
-              //     borderRadius: BorderRadius.circular(16),
-              //   ),
-              //   child: Column(
-              //     children: [
-              //       Text(
-              //         'ETA',
-              //         style: TextStyle(
-              //           fontSize: 12,
-              //           color: Colors.white.withOpacity(0.8),
-              //           fontWeight: FontWeight.w500,
-              //         ),
-              //       ),
-              //       const SizedBox(height: 4),
-              //       const Text(
-              //         '10 min',
-              //         style: TextStyle(
-              //           fontSize: 20,
-              //           fontWeight: FontWeight.w700,
-              //           color: Colors.white,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
             ],
           ),
           const SizedBox(height: 20),
@@ -459,7 +406,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 );
               },
             ),
-
             _buildActionCard(
               context,
               icon: Icons.support_agent_rounded,
@@ -586,7 +532,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   );
                 },
               ),
-
               _buildNavItem(
                 context,
                 icon: Icons.person_rounded,
