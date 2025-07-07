@@ -5,6 +5,9 @@ import 'package:school_bus_tracking_app/screens/bus_details_screen.dart';
 import 'package:school_bus_tracking_app/screens/live_bus_tracking_screen.dart';
 import 'package:school_bus_tracking_app/screens/profile_screen.dart';
 import 'package:school_bus_tracking_app/screens/support_screen.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   final String studentName;
@@ -18,6 +21,118 @@ class StudentHomeScreen extends StatefulWidget {
 
 class _StudentHomeScreenState extends State<StudentHomeScreen> {
   bool isActive = false; // Track active status
+  final DatabaseReference _database = FirebaseDatabase.instance.ref();
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFirebase();
+  }
+
+  // Initialize Firebase and check initial status
+  void _initializeFirebase() async {
+    try {
+      // Optionally, fetch initial status from Firebase if needed
+      final snapshot =
+          await _database
+              .child('students')
+              .child(widget.studentName)
+              .child('status')
+              .get();
+      if (snapshot.exists) {
+        final data = snapshot.value as Map<dynamic, dynamic>;
+        setState(() {
+          isActive = data['isActive'] ?? false;
+        });
+      }
+    } catch (e) {
+      print('Error initializing Firebase: $e');
+    }
+  }
+
+  // Handle location permission and update Firebase
+  Future<void> _handleLocationAndFirebaseUpdate(bool newValue) async {
+    if (newValue) {
+      // Request location permission when toggling to active
+      final status = await _requestLocationPermission();
+      if (status == PermissionStatus.granted) {
+        try {
+          final position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high,
+          );
+          await _updateFirebaseStatus(
+            isActive: newValue,
+            latitude: position.latitude,
+            longitude: position.longitude,
+          );
+        } catch (e) {
+          print('Error getting location: $e');
+          // Revert toggle if location fetch fails
+          setState(() {
+            isActive = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to get location. Please try again.'),
+            ),
+          );
+        }
+      } else {
+        // Revert toggle if permission is denied
+        setState(() {
+          isActive = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permission denied.')),
+        );
+      }
+    } else {
+      // Update Firebase when toggling to inactive
+      await _updateFirebaseStatus(isActive: newValue);
+    }
+  }
+
+  // Request location permission
+  Future<PermissionStatus> _requestLocationPermission() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are disabled
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enable location services.')),
+      );
+      return PermissionStatus.denied;
+    }
+
+    PermissionStatus permission = await Permission.location.status;
+    if (permission.isDenied) {
+      permission = await Permission.location.request();
+    }
+
+    return permission;
+  }
+
+  // Update Firebase Realtime Database with status and location
+  Future<void> _updateFirebaseStatus({
+    required bool isActive,
+    double? latitude,
+    double? longitude,
+  }) async {
+    try {
+      await _database
+          .child('students')
+          .child(widget.studentName)
+          .child('status')
+          .set({
+            'isActive': isActive,
+            'latitude': latitude,
+            'longitude': longitude,
+            'timestamp': ServerValue.timestamp,
+          });
+    } catch (e) {
+      print('Error updating Firebase: $e');
+      throw e;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +140,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       backgroundColor: const Color(0xFFF8FAFC),
       body: CustomScrollView(
         slivers: [
-          _buildSliverAppBar(context),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -47,20 +161,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         ],
       ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
-    );
-  }
-
-  Widget _buildSliverAppBar(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 80, // Reduced height for minimalistic look
-      floating: false,
-      pinned: true,
-      elevation: 0,
-      backgroundColor: const Color(0xFF764BA2),
-      surfaceTintColor: Colors.transparent,
-      flexibleSpace: const FlexibleSpaceBar(
-        background: SizedBox.shrink(), // Empty content for clean look
-      ),
     );
   }
 
@@ -153,6 +253,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       onTap: () {
                         setState(() {
                           isActive = !isActive;
+                          _handleLocationAndFirebaseUpdate(isActive);
                         });
                       },
                       child: Text(
@@ -171,6 +272,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       onChanged: (val) {
                         setState(() {
                           isActive = val;
+                          _handleLocationAndFirebaseUpdate(val);
                         });
                       },
                       activeColor: const Color(0xFF10B981),
