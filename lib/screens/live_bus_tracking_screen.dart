@@ -1,9 +1,10 @@
-// lib/screens/live_bus_tracking_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:school_bus_tracking_app/screens/bus_details_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:provider/provider.dart';
+import '../eta_notifier.dart';
 
 class LiveBusTrackingScreen extends StatefulWidget {
   const LiveBusTrackingScreen({super.key});
@@ -117,11 +118,19 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
             _hasCenteredOnBus = true;
           }
         });
+        // Update global notifier for ETA
+        try {
+          Provider.of<EtaNotifier>(context, listen: false).value = arrivalTime;
+        } catch (_) {}
       } else {
         setState(() {
           activeBuses = [];
           arrivalTime = _calculateEta();
         });
+        // Update global notifier for ETA
+        try {
+          Provider.of<EtaNotifier>(context, listen: false).value = arrivalTime;
+        } catch (_) {}
       }
     });
   }
