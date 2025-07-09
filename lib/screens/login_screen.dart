@@ -101,8 +101,8 @@ class _LoginScreenState extends State<LoginScreen>
         Text(
           label,
           style: GoogleFonts.poppins(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w500,
             color: const Color(0xFF1F2937),
           ),
         ),
@@ -186,8 +186,8 @@ class _LoginScreenState extends State<LoginScreen>
             Text(
               label,
               style: GoogleFonts.poppins(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
                 color: Colors.grey[700],
               ),
             ),
@@ -297,12 +297,12 @@ class _LoginScreenState extends State<LoginScreen>
                                   Text(
                                     'Welcome Back!',
                                     style: GoogleFonts.poppins(
-                                      fontSize: 28.sp,
-                                      fontWeight: FontWeight.w800,
+                                      fontSize: 20.sp,
+                                      fontWeight: FontWeight.w600,
                                       color: const Color(0xFF1F2937),
                                     ),
                                   ),
-                                  SizedBox(height: 8.h),
+                                  SizedBox(height: 4.h),
                                   Text(
                                     'Sign in to continue to Bech Bus',
                                     style: GoogleFonts.poppins(
@@ -314,7 +314,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 ],
                               ),
                             ),
-                            SizedBox(height: 24),
+                            SizedBox(height: 30.h),
 
                             // Login form
                             Form(
@@ -366,34 +366,6 @@ class _LoginScreenState extends State<LoginScreen>
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        children: [
-                                          Transform.scale(
-                                            scale: 0.8,
-                                            child: Checkbox(
-                                              value: _rememberMe,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  _rememberMe = value!;
-                                                });
-                                              },
-                                              activeColor: Color(0xFF667EEA),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                              ),
-                                            ),
-                                          ),
-                                          Text(
-                                            'Remember me',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
                                       TextButton(
                                         onPressed: () {
                                           Navigator.push(
@@ -407,8 +379,8 @@ class _LoginScreenState extends State<LoginScreen>
                                         },
                                         child: Text(
                                           'Forgot Password?',
-                                          style: TextStyle(
-                                            fontSize: 14,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12.sp,
                                             color: Color(0xFF667EEA),
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -476,7 +448,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       Text(
                                         "Don't have an account? ",
                                         style: GoogleFonts.poppins(
-                                          fontSize: 14.sp,
+                                          fontSize: 11.sp,
                                         ),
                                       ),
                                       GestureDetector(
@@ -495,7 +467,7 @@ class _LoginScreenState extends State<LoginScreen>
                                           style: GoogleFonts.poppins(
                                             color: const Color(0xFF667EEA),
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 14.sp,
+                                            fontSize: 11.sp,
                                             decoration:
                                                 TextDecoration.underline,
                                           ),
@@ -505,35 +477,35 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
 
                                   // Or divider
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Container(
-                                          height: 1,
-                                          color: Colors.grey[300],
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 16.w,
-                                        ),
-                                        child: Text(
-                                          'Or continue with',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 14.sp,
-                                            color: Colors.grey[600],
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          height: 1,
-                                          color: Colors.grey[300],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                  // Row(
+                                  //   children: [
+                                  //     Expanded(
+                                  //       child: Container(
+                                  //         height: 1,
+                                  //         color: Colors.grey[300],
+                                  //       ),
+                                  //     ),
+                                  //     Padding(
+                                  //       padding: EdgeInsets.symmetric(
+                                  //         horizontal: 16.w,
+                                  //       ),
+                                  //       child: Text(
+                                  //         'Or continue with',
+                                  //         style: GoogleFonts.poppins(
+                                  //           fontSize: 14.sp,
+                                  //           color: Colors.grey[600],
+                                  //           fontWeight: FontWeight.w500,
+                                  //         ),
+                                  //       ),
+                                  //     ),
+                                  //     Expanded(
+                                  //       child: Container(
+                                  //         height: 1,
+                                  //         color: Colors.grey[300],
+                                  //       ),
+                                  //     ),
+                                  //   ],
+                                  // ),
                                   SizedBox(height: 24.h),
 
                                   // Social login buttons
@@ -564,42 +536,6 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                             ),
                             SizedBox(height: 24),
-
-                            // Sign up link
-                            Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Don\'t have an account? ',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14.sp,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) => RegistrationScreen(),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      'Sign Up',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14.sp,
-                                        color: Color(0xFF667EEA),
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ],
                         ),
                       ),
