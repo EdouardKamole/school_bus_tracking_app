@@ -1,5 +1,6 @@
 // lib/screens/profile_screen.dart
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:school_bus_tracking_app/screens/login_screen.dart';
@@ -72,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Profile', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           _isEditing
@@ -180,7 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Expanded(
                           child: Text(
                             email,
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 16,
                               color: Colors.black87,
                               fontWeight: FontWeight.w500,
@@ -220,7 +221,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: Icon(Icons.save_rounded, color: Colors.white),
                         label: Text(
                           'Save Changes',
-                          style: TextStyle(color: Colors.white),
+                          style: GoogleFonts.poppins(color: Colors.white),
                         ),
                         onPressed: _saveProfile,
                       ),
@@ -245,7 +246,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: Icon(Icons.logout, color: Colors.white),
                       label: Text(
                         'Logout',
-                        style: TextStyle(color: Colors.white),
+                        style: GoogleFonts.poppins(color: Colors.white),
                       ),
                       onPressed: _logout,
                     ),
@@ -269,7 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (isEditing) {
       return TextFormField(
         controller: controller,
-        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+        style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w500),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
@@ -315,7 +316,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Expanded(
               child: Text(
                 controller.text,
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   color: Colors.black87,
                   fontWeight: FontWeight.w500,

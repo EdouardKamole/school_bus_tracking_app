@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -119,7 +120,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1F2937),
@@ -266,7 +267,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                   children: [
                                     Text(
                                       'Create Account',
-                                      style: TextStyle(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 28,
                                         fontWeight: FontWeight.w800,
                                         color: Color(0xFF1F2937),
@@ -275,7 +276,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                     SizedBox(height: 8),
                                     Text(
                                       'Join Bech Bus for seamless school transportation',
-                                      style: TextStyle(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 16,
                                         color: Colors.grey[600],
                                         fontWeight: FontWeight.w500,
@@ -416,7 +417,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                                 ),
                                                 child: RichText(
                                                   text: TextSpan(
-                                                    style: TextStyle(
+                                                    style: GoogleFonts.poppins(
                                                       fontSize: 14,
                                                       color: Colors.grey[600],
                                                       fontWeight:
@@ -429,7 +430,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                                       TextSpan(
                                                         text:
                                                             'Terms of Service',
-                                                        style: TextStyle(
+                                                        style: GoogleFonts.poppins(
                                                           color: Color(
                                                             0xFF667EEA,
                                                           ),
@@ -440,7 +441,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                                       TextSpan(text: ' and '),
                                                       TextSpan(
                                                         text: 'Privacy Policy',
-                                                        style: TextStyle(
+                                                        style: GoogleFonts.poppins(
                                                           color: Color(
                                                             0xFF667EEA,
                                                           ),
@@ -496,7 +497,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                                         )
                                                         : Text(
                                                           'Create Account',
-                                                          style: TextStyle(
+                                                          style: GoogleFonts.poppins(
                                                             fontSize: 16,
                                                             fontWeight:
                                                                 FontWeight.w600,
@@ -515,7 +516,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                             children: [
                                               Text(
                                                 'Already have an account? ',
-                                                style: TextStyle(
+                                                style: GoogleFonts.poppins(
                                                   fontSize: 14,
                                                   color: Colors.grey[600],
                                                   fontWeight: FontWeight.w500,
@@ -527,7 +528,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                                 },
                                                 child: Text(
                                                   'Sign In',
-                                                  style: TextStyle(
+                                                  style: GoogleFonts.poppins(
                                                     fontSize: 14,
                                                     color: Color(0xFF667EEA),
                                                     fontWeight: FontWeight.w700,

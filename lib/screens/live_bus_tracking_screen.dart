@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:school_bus_tracking_app/screens/bus_details_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
 import '../eta_notifier.dart';
+import 'dart:async';
 
 class LiveBusTrackingScreen extends StatefulWidget {
   const LiveBusTrackingScreen({super.key});
@@ -53,41 +56,49 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
 
   @override
   void dispose() {
+    _studentStatusSubscription.cancel();
     _animationController.dispose();
     super.dispose();
   }
 
   // Listen to all active students in Firebase
+  late StreamSubscription<DatabaseEvent> _studentStatusSubscription;
+
   void _listenToActiveStudents() {
-    _database.child('students').onValue.listen((event) {
-      final students = event.snapshot.value as Map<dynamic, dynamic>?;
-      if (students != null) {
-        final List<Map<String, dynamic>> active = [];
-        students.forEach((name, value) {
-          final status = value['status'] as Map<dynamic, dynamic>?;
+    final user = FirebaseAuth.instance.currentUser;
+    final uid = user?.uid;
+    if (uid == null) return;
+    _studentStatusSubscription = _database
+        .child('students')
+        .child(uid)
+        .child('status')
+        .onValue
+        .listen((event) {
+          final status = event.snapshot.value as Map<dynamic, dynamic>?;
           if (status != null &&
               status['isActive'] == true &&
               status['latitude'] != null &&
               status['longitude'] != null) {
-            active.add({
-              'name': name,
-              'latitude': (status['latitude'] as num).toDouble(),
-              'longitude': (status['longitude'] as num).toDouble(),
-              'timestamp': status['timestamp'],
+            if (mounted) {
+              setState(() {
+                activeStudents = [
+                  {
+                    'name': user?.displayName ?? user?.email ?? 'Me',
+                    'latitude': (status['latitude'] as num).toDouble(),
+                    'longitude': (status['longitude'] as num).toDouble(),
+                    'timestamp': status['timestamp'],
+                  },
+                ];
+              });
+            }
+            arrivalTime = _calculateEta();
+          } else {
+            setState(() {
+              activeStudents = [];
+              arrivalTime = _calculateEta();
             });
           }
         });
-        setState(() {
-          activeStudents = active;
-          arrivalTime = _calculateEta();
-        });
-      } else {
-        setState(() {
-          activeStudents = [];
-          arrivalTime = _calculateEta();
-        });
-      }
-    });
   }
 
   // Listen to all active buses in Firebase
@@ -172,20 +183,22 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
     }
   }
 
-  // Calculate center point between first student and first bus locations (fallback to Riyadh if none)
-  LatLng _calculateCenterPoint() {
+  // Automatically fix/center the map on the most relevant point
+  void afix() {
+    LatLng? center;
     if (_firstStudentLocation != null && _firstBusLocation != null) {
-      return LatLng(
+      center = LatLng(
         (_firstStudentLocation!.latitude + _firstBusLocation!.latitude) / 2,
         (_firstStudentLocation!.longitude + _firstBusLocation!.longitude) / 2,
       );
     } else if (_firstStudentLocation != null) {
-      return _firstStudentLocation!;
+      center = _firstStudentLocation!;
     } else if (_firstBusLocation != null) {
-      return _firstBusLocation!;
+      center = _firstBusLocation!;
     } else {
-      return const LatLng(24.7136, 46.6753); // Default fallback (Riyadh)
+      center = const LatLng(24.7136, 46.6753); // Riyadh fallback
     }
+    _mapController.move(center, _mapController.zoom);
   }
 
   // Zoom in on the map
@@ -200,6 +213,9 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
 
   // Center map on student location
   void _centerOnStudent() {
+    print(
+      "_centerOnStudent called. Location: " + _firstStudentLocation.toString(),
+    );
     if (_firstStudentLocation != null) {
       _mapController.move(_firstStudentLocation!, _mapController.zoom);
     } else {
@@ -416,14 +432,17 @@ class _LiveBusTrackingScreenState extends State<LiveBusTrackingScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Bus Arrival Time',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               arrivalTime,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             LinearProgressIndicator(
